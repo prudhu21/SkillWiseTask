@@ -12,7 +12,8 @@ type Props = {
 
 const ProductTable: React.FC<Props> = ({ products, onUpdate, onDelete, onViewHistory, loading }) => {
   if (loading) return <div>Loading...</div>;
-  if (!products || products.length === 0) return <div>No products</div>;
+  const list = Array.isArray(products) ? products : [];
+  if (list.length === 0) return <div>No products</div>;
 
   return (
     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -29,7 +30,7 @@ const ProductTable: React.FC<Props> = ({ products, onUpdate, onDelete, onViewHis
         </tr>
       </thead>
       <tbody>
-        {products.map((p) => (
+        {list.map((p) => (
           <ProductRow key={p.id} product={p} onUpdated={onUpdate} onViewHistory={onViewHistory} onDeleted={onDelete} />
         ))}
       </tbody>

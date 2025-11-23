@@ -26,6 +26,10 @@ const ProductsPage: React.FC = () => {
       else if (Array.isArray((data as any)?.data)) rows = (data as any).data;
       else if (Array.isArray((data as any)?.rows)) rows = (data as any).rows;
       else rows = [];
+      
+      if (!Array.isArray(data) && (data && (Object.keys(data).length > 0))) {
+        console.warn('[API] Unexpected /products response shape, normalized to array:', data);
+      }
       setProducts(rows);
     } catch (err) {
       console.error('fetchProducts err', err);
