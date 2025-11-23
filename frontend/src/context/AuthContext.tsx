@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(res.data.token);
       setUser(res.data.user ?? null);
       setLoading(false);
-      navigate('/'); // or '/dashboard'
+      navigate('/'); 
       return { ok: true, user: res.data.user };
     } catch (err: any) {
       console.error('[Auth] login error:', err?.response?.data ?? err?.message);

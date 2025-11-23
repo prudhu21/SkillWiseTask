@@ -9,12 +9,10 @@ type Props = {
   onDeleted?: (id: number) => void;
 };
 
-const TOAST_DURATION = 3500; // ms
+const TOAST_DURATION = 3500; 
 
-// local uploaded image (will be transformed to a URL by your environment/tooling)
 const UPLOADED_FALLBACK_IMAGE = '/mnt/data/a3417286-95ca-4731-aa4f-3532ce8bf4e5.png';
 
-// small utility to show transient toast messages (appends to body)
 function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
   try {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -41,7 +39,6 @@ function showToast(message: string, type: 'success' | 'error' | 'info' = 'info')
     el.style.gap = '10px';
     el.style.paddingRight = '12px';
 
-    // color by type
     if (type === 'success') {
       el.style.background = 'linear-gradient(90deg,#10B981,#059669)';
     } else if (type === 'error') {
@@ -50,7 +47,6 @@ function showToast(message: string, type: 'success' | 'error' | 'info' = 'info')
       el.style.background = 'linear-gradient(90deg,#6b7280,#4b5563)';
     }
 
-    // icon
     const icon = document.createElement('span');
     icon.style.display = 'inline-flex';
     icon.style.alignItems = 'center';
@@ -91,7 +87,6 @@ function showToast(message: string, type: 'success' | 'error' | 'info' = 'info')
     el.appendChild(text);
     el.appendChild(closeBtn);
 
-    // stacking container: create once
     const containerId = 'toast-container-bottom-right';
     let container = document.getElementById(containerId);
     if (!container) {
@@ -107,16 +102,13 @@ function showToast(message: string, type: 'success' | 'error' | 'info' = 'info')
       container.style.alignItems = 'flex-end';
       document.body.appendChild(container);
     }
-    // append so newest stacks at bottom
     container.appendChild(el);
 
-    // animate in
     requestAnimationFrame(() => {
       el.style.transform = 'translateY(0)';
       el.style.opacity = '1';
     });
 
-    // auto-remove
     const t = setTimeout(() => {
       if (el.parentElement) {
         el.style.opacity = '0';
@@ -138,7 +130,6 @@ const ProductRow: React.FC<Props> = ({ product, onUpdated, onViewHistory, onDele
   const [form, setForm] = useState<Product>({ ...product });
   const [saving, setSaving] = useState(false);
 
-  // inline placeholder SVG (used only if image fails to load)
   const placeholder =
     "data:image/svg+xml;utf8," +
     encodeURIComponent(
@@ -149,7 +140,6 @@ const ProductRow: React.FC<Props> = ({ product, onUpdated, onViewHistory, onDele
     if (!url) return UPLOADED_FALLBACK_IMAGE;
     try {
       const lower = url.toLowerCase();
-      // treat some hosts as unreliable in exam environment and provide deterministic placeholder
       if (lower.includes('via.placeholder.com') || lower.includes('lh3.googleusercontent.com/pw/')) {
         return `https://picsum.photos/seed/${encodeURIComponent(product.name.replace(/\s+/g, '-'))}/150`;
       }

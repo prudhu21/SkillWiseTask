@@ -1,13 +1,10 @@
-// backend/models/productModel.js
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const DB_FILE = path.join(__dirname, '..', 'inventory.db');
 const db = new sqlite3.Database(DB_FILE);
 
-// fallback image (your uploaded file)
 const DEFAULT_IMAGE = '/mnt/data/a3417286-95ca-4731-aa4f-3532ce8bf4e5.png';
 
-// Promisify helper
 function run(sql, params = []) {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function (err) {
@@ -33,7 +30,6 @@ function get(sql, params = []) {
   });
 }
 
-// Initialize DB and tables
 async function init() {
   const createProducts = `CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,7 +56,6 @@ async function init() {
 }
 init().catch((e) => console.error('DB init error', e));
 
-// Helper to build WHERE from search/category
 function buildWhereAndParams({ search, category }) {
   const clauses = [];
   const params = [];
@@ -76,7 +71,6 @@ function buildWhereAndParams({ search, category }) {
   return { where, params };
 }
 
-// List products with optional pagination/sort/search
 async function listProducts({ page = 1, limit = 100, sort = 'name', order = 'ASC', search, category } = {}) {
   // sanitize sort/order
   const allowedSort = ['name', 'stock', 'category', 'brand', 'created_at'];
@@ -93,14 +87,12 @@ async function listProducts({ page = 1, limit = 100, sort = 'name', order = 'ASC
     `SELECT * FROM products ${where} ORDER BY ${s} ${o} LIMIT ? OFFSET ?`,
     params.concat([limit, offset])
   );
-  // ensure image fallback
   for (const r of rows) {
     if (!r.image) r.image = DEFAULT_IMAGE;
   }
   return { rows, total };
 }
 
-// Get single product
 async function getProductById(id) {
   const row = await get('SELECT * FROM products WHERE id = ?', [id]);
   if (!row) return null;
@@ -108,7 +100,6 @@ async function getProductById(id) {
   return row;
 }
 
-// Create product
 async function createProduct(data) {
   const image = data.image || DEFAULT_IMAGE;
   const sql = `INSERT INTO products (name, unit, category, brand, stock, status, image) VALUES (?, ?, ?, ?, ?, ?, ?)`;
@@ -124,9 +115,7 @@ async function createProduct(data) {
   return getProductById(lastID);
 }
 
-// Update product and add inventory_history when stock changes
 async function updateProduct(id, data, userInfo = null) {
-  // fetch existing
   const existing = await getProductById(id);
   if (!existing) throw new Error('Product not found');
 
@@ -141,19 +130,16 @@ async function updateProduct(id, data, userInfo = null) {
     image: data.image != null ? data.image : existing.image,
   };
 
-  // Validate unique name (if changed)
   if (updates.name !== existing.name) {
     const row = await get('SELECT id FROM products WHERE LOWER(name) = ? AND id != ?', [updates.name.toLowerCase(), id]);
     if (row) throw new Error('Product with this name already exists');
   }
 
-  // If stock changed, insert history
   if (Number(existing.stock) !== Number(updates.stock)) {
     const insertHist = `INSERT INTO inventory_history (product_id, old_quantity, new_quantity, change_date, user_info) VALUES (?, ?, ?, ?, ?)`;
     await run(insertHist, [id, existing.stock, updates.stock, new Date().toISOString(), userInfo || null]);
   }
 
-  // Update product
   const sql = `UPDATE products SET name = ?, unit = ?, category = ?, brand = ?, stock = ?, status = ?, image = ? WHERE id = ?`;
   await run(sql, [
     updates.name,
@@ -169,7 +155,6 @@ async function updateProduct(id, data, userInfo = null) {
   return getProductById(id);
 }
 
-// Get history for a product (sorted desc)
 async function getHistory(productId) {
   const rows = await all(
     `SELECT id, product_id, old_quantity, new_quantity, change_date, user_info FROM inventory_history WHERE product_id = ? ORDER BY datetime(change_date) DESC`,
@@ -185,7 +170,6 @@ async function getHistory(productId) {
   }));
 }
 
-// Bulk import with duplicate-check by name (case-insensitive)
 async function importMany(items = []) {
   const added = [];
   const skipped = [];
@@ -220,7 +204,6 @@ async function importMany(items = []) {
   return { addedCount: added.length, skippedCount: skipped.length, added, skipped, duplicates };
 }
 
-// Delete product
 async function deleteProduct(id) {
   const { changes } = await run('DELETE FROM products WHERE id = ?', [id]);
   return changes > 0;

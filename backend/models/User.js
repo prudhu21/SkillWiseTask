@@ -18,7 +18,6 @@ module.exports = {
       lean: async () => {
         if (!filter) return null;
 
-        // Prefer explicit checks so callers can search by username or email
         if (filter.username) {
           const u = users.find(x => x.username === filter.username);
           return u ? { ...u } : null;
@@ -31,7 +30,6 @@ module.exports = {
           const u = users.find(x => x.username === filter.user || x._id === filter.user);
           return u ? { ...u } : null;
         }
-        // fallback: try to match any string value against username
         const val = Object.values(filter).find(v => typeof v === 'string');
         if (val) {
           const u = users.find(x => x.username === val || x.email === val || x._id === val);
@@ -53,6 +51,5 @@ module.exports = {
     return { ...u };
   }
   ,
-  // dev helper: list users (do not expose in production)
   listAll: () => users.map(u => ({ ...u }))
 };

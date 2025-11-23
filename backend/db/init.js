@@ -1,4 +1,3 @@
-// backend/db/init.js
 require('dotenv').config();
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -6,18 +5,16 @@ const fs = require('fs');
 
 const DB_FILE = process.env.DB_FILE || path.join(__dirname, '../inventory.db');
 
-// ensure folder exists
 const dir = path.dirname(DB_FILE);
 if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
 const db = new sqlite3.Database(DB_FILE);
 
-// Small promise wrappers so we can use async/await in other files
 function runAsync(sql, params = []) {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function (err) {
       if (err) return reject(err);
-      resolve(this); // allows access to lastID, changes
+      resolve(this); 
     });
   });
 }
@@ -39,7 +36,6 @@ function allAsync(sql, params = []) {
 }
 
 async function init({ seed = true } = {}) {
-  // run table creation in serialize to keep order deterministic
   db.serialize(async () => {
     try {
       await runAsync(`CREATE TABLE IF NOT EXISTS products (
@@ -65,11 +61,9 @@ async function init({ seed = true } = {}) {
         FOREIGN KEY(product_id) REFERENCES products(id)
       )`);
 
-      // optional indexes
       await runAsync(`CREATE INDEX IF NOT EXISTS idx_products_name ON products(LOWER(name));`);
       await runAsync(`CREATE INDEX IF NOT EXISTS idx_history_product ON inventory_history(product_id);`);
 
-      // optional seed
       if (seed) {
         const row = await getAsync('SELECT COUNT(*) as cnt FROM products', []);
         const count = row ? row.cnt : 0;

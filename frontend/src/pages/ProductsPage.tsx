@@ -46,7 +46,6 @@ const ProductsPage: React.FC = () => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // Add product state & handlers
   const [showAdd, setShowAdd] = useState(false);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({ name: '', unit: '', category: '', brand: '', stock: 0, status: 'active', image: '' });
 
@@ -70,7 +69,7 @@ const ProductsPage: React.FC = () => {
         image: newProduct.image || ''
       };
       const res = await API.post<Product>('/products', payload);
-      // prepend the new product
+
       setProducts((prev) => [res.data, ...prev]);
       setShowAdd(false);
       setNewProduct({ name: '', unit: '', category: '', brand: '', stock: 0, status: 'active', image: '' });
@@ -114,7 +113,6 @@ const ProductsPage: React.FC = () => {
               onChange={(e) => {
                 const newCat = e.target.value;
                 setCategory(newCat);
-                // fetch immediately when category changes
                 fetchProducts({ search, category: newCat });
               }}
               style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid #e6e9ef' }}

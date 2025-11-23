@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// reuse the tiny toast helper from ProductRow
 function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
   try {
     const el = document.createElement('div');
@@ -51,7 +50,7 @@ const Login: React.FC = () => {
       if (username === 'admin' && password === 'password') {
         localStorage.setItem('token', 'dummy-jwt-token');
         showToast('Login successful', 'success');
-        navigate('/'); // redirect to home/dashboard
+        navigate('/'); 
       } else {
         showToast('Invalid credentials', 'error');
       }

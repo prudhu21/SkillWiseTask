@@ -2,7 +2,6 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 
-// Safe base URL resolver without using process
 function getBaseUrl(): string {
   try {
     const viteVal = (import.meta as any)?.env?.VITE_API_BASE;
@@ -27,7 +26,6 @@ const API: AxiosInstance = axios.create({
   timeout: 15000
 });
 
-// Attach token automatically
 API.interceptors.request.use((cfg) => {
   const token = localStorage.getItem('token');
   if (token && cfg.headers) {
@@ -36,7 +34,6 @@ API.interceptors.request.use((cfg) => {
   return cfg;
 });
 
-// Log errors cleanly
 API.interceptors.response.use(
   (res) => res,
   (err) => {

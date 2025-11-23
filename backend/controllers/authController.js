@@ -1,7 +1,6 @@
-// controllers/authController.js
-const bcrypt = require('bcryptjs'); // or bcrypt
+const bcrypt = require('bcryptjs'); 
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // adapt to your ORM/model path
+const User = require('../models/User'); 
 
 exports.register = async (req, res) => {
   try {
@@ -30,12 +29,11 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   console.log('[Server] login body:', req.body);
   try {
-    // Basic validation
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ message: 'username and password are required' });
     }
-    // Find user (accept username or email)
+  
     const identifier = username;
     let user = await User.findOne({ username: identifier }).lean();
     console.log('[Server] lookup by username result:', !!user, user && { username: user.username, email: user.email });
@@ -43,7 +41,6 @@ exports.login = async (req, res) => {
       user = await User.findOne({ email: identifier }).lean();
       console.log('[Server] lookup by email result:', !!user, user && { username: user.username, email: user.email });
     }
-    // fallback: try other common fields
     if (!user) {
       user = await User.findOne({ user: identifier }).lean();
     }
@@ -51,14 +48,12 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Compare password
     const ok = await bcrypt.compare(password, user.passwordHash || user.password);
     console.log('[Server] password compare result for', user.username, ok);
     if (!ok) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Ensure JWT secret exists
     if (!process.env.JWT_SECRET) {
       console.error('[Server] JWT_SECRET is not set!');
       return res.status(500).json({ message: 'Server configuration error' });
@@ -67,13 +62,10 @@ exports.login = async (req, res) => {
     const payload = { id: user._id, username: user.username, role: user.role };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    // Send minimal user object
     const safeUser = { id: user._id, username: user.username, role: user.role };
     return res.json({ token, user: safeUser });
   } catch (err) {
-    // Log full stack on server console to find root cause
     console.error('[Server] Login handler error:', err?.stack || err);
-    // If you want to expose stack in non-production only:
     const response = { message: 'Server error during login' };
     if (process.env.NODE_ENV !== 'production') {
       response.details = err?.message;
@@ -82,7 +74,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Dev-only: return demo users for debugging
 exports.debugUsers = (req, res) => {
   try {
     const list = User.listAll ? User.listAll() : [];

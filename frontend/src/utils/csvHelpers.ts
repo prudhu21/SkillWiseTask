@@ -1,4 +1,3 @@
-// helper utilities if you later want client-side CSV parsing/generation
 export function escapeCsvCell(value: string | number | null | undefined) {
   if (value == null) return '';
   const s = String(value);
