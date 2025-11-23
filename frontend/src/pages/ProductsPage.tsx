@@ -20,7 +20,13 @@ const ProductsPage: React.FC = () => {
       if (q?.search) params.search = q.search;
       if (q?.category) params.category = q.category;
       const res = await API.get<Product[]>('/products', { params });
-      setProducts(res.data);
+      const data = res?.data;
+      let rows: Product[] = [];
+      if (Array.isArray(data)) rows = data;
+      else if (Array.isArray((data as any)?.data)) rows = (data as any).data;
+      else if (Array.isArray((data as any)?.rows)) rows = (data as any).rows;
+      else rows = [];
+      setProducts(rows);
     } catch (err) {
       console.error('fetchProducts err', err);
     } finally {
@@ -34,7 +40,8 @@ const ProductsPage: React.FC = () => {
 
   const categories = useMemo(() => {
     const setC = new Set<string>();
-    products.forEach((p) => { if (p.category) setC.add(p.category); });
+    const list = Array.isArray(products) ? products : [];
+    list.forEach((p) => { if (p && p.category) setC.add(p.category); });
     return Array.from(setC);
   }, [products]);
 
